@@ -1,10 +1,10 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/Users/jameski/.oh-my-zsh
+export ZSH=~/.oh-my-zsh
 
-# Set name of the theme to load.
-# Look in ~/.oh-my-zsh/themes/
-# Optionally, if you set this to "random", it'll load a random theme each
-# time that oh-my-zsh is loaded.
+# Path to NVM installation.
+export NVM_DIR=~/.nvm
+
+# Set name of the theme to load. (Look in ~/.oh-my-zsh/themes/)
 ZSH_THEME="robbyrussell"
 
 # Uncomment the following line to use case-sensitive completion.
@@ -18,7 +18,7 @@ ZSH_THEME="robbyrussell"
 # DISABLE_AUTO_UPDATE="true"
 
 # Uncomment the following line to change how often to auto-update (in days).
-# export UPDATE_ZSH_DAYS=13
+export UPDATE_ZSH_DAYS=13
 
 # Uncomment the following line to disable colors in ls.
 # DISABLE_LS_COLORS="true"
@@ -52,8 +52,7 @@ ZSH_THEME="robbyrussell"
 plugins=(git composer vagrant)
 
 # User configuration
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin"
-# export MANPATH="/usr/local/man:$MANPATH"
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin"
 
 # Some shell script..
 source $ZSH/oh-my-zsh.sh
@@ -81,16 +80,15 @@ fi
 
 # Aliases
 if [ -f ~/.bash_aliases ]; then
-        . ~/.bash_aliases
+  source ~/.bash_aliases
 fi
 
 # Secret Aliases
 if [ -f ~/.bash_secret_aliases ]; then
-        . ~/.bash_secret_aliases
+  source ~/.bash_secret_aliases
 fi
 
-export PATH="/usr/local/sbin:$PATH"
-
 # NVM
-export NVM_DIR=~/.nvm
-source $(brew --prefix nvm)/nvm.sh
+if [ -f $(brew --prefix nvm)/nvm.sh ]; then
+  source $(brew --prefix nvm)/nvm.sh
+fi
