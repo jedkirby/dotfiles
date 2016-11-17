@@ -1,0 +1,11 @@
+alias ll='ls -lGh'
+alias code='sublime .'
+alias cdc='cd ~/Clients && clear'
+alias hosts='sudo nano /etc/hosts'
+alias phpunit='php vendor/bin/phpunit'
+
+alias glg='git log --graph --decorate --branches --oneline --remotes --tags --all --color'
+alias gff='git ff'
+alias gci='git ci'
+alias gin='git log $(git describe --tags --abbrev=0)..HEAD --merges --first-parent --oneline'
+alias gcd='git cdiff'
