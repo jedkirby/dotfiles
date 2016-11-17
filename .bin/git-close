@@ -1,0 +1,134 @@
+#!/bin/bash
+
+DELETE=0
+PUSH=0
+EDIT=''
+
+while getopts "dper:m:" opt; do
+  case $opt in
+    d)
+		DELETE=1
+		;;
+	e)
+		EDIT='--edit'
+		;;
+	r)
+		RESOLVES="$OPTARG"
+		;;
+	m)
+		MESSAGE="$OPTARG"
+		;;
+	p)
+		PUSH=1
+		;;
+	?)
+	  ;;
+  esac
+done
+shift $(($OPTIND-1))
+
+target=$1;
+branch=$2;
+
+if [ "$target" = "" ]; then
+	echo -e "Usage: git close [-d] [-r \033[4mnum\033[0m] [-m \033[4mmessage\033[0m] <target> [<branch>]"
+	echo -e "Closes <branch> by merging it into <target>"
+	echo -e ""
+	echo -e "\t<branch> defaults to current branch"
+	echo -e "\tUse -d to remove the old branch"
+	echo -e "\tUse -r \033[4mnum\033[0m to resolve github issue with ID \033[4mnum\033[0m"
+	echo -e "\tUse -m \033[4mmessage\033[0m to add extra message \033[4mmessage\033[0m"
+	exit 1
+fi
+
+if [ "$branch" = "" ]; then
+	branch=$(git branch | grep '^\*' | cut -d' ' -f2)
+
+	if [ "$?" -ne "0" ]; then
+		echo "Cannot determine current branch" >&2
+		exit 1
+	fi
+fi
+
+# Find a change: any file in git status not untracked or ignored
+git status --porcelain | grep -v '^[?!]' 2>&1 >/dev/null
+
+if [ "$?" -eq "0" ]; then
+	echo "Changes detected in working tree. Commit, stash or discard these and try again." >&2
+	exit 2
+fi
+
+# check that $branch is based on $target
+git checkout -q "$branch"
+git branch --contains "$target" | grep "^\*" 2>&1 >/dev/null
+
+if [ "$?" -eq "1" ]; then
+	echo "$branch is not based on $target. Rebase first." >&2
+	exit 3
+fi
+
+# Merge always merges into current branch.
+git checkout -q "$target"
+
+if [ "$?" -ne "0" ]; then
+	echo "Could not check out $target. Fix this and try again" >&2
+	exit 4
+fi
+
+
+MSG="$branch merged into $target"
+
+if [ "$RESOLVES" == "" ]; then
+	MSG="$MSG; closed"
+else
+	MSG="$MSG; resolves #$RESOLVES"
+fi
+
+if [ "$MESSAGE" != "" ]; then
+	MSG="$MSG
+
+$MESSAGE"
+fi
+
+git merge $EDIT --no-ff "$branch" -m"$MSG"
+
+if [ "$?" -ne "0" ]; then
+	echo "Merging $branch into $target failed. Please check." >&2
+	exit 5
+else
+	echo "Merge successful!"
+fi
+
+if [ "$DELETE" -eq "1" ]; then
+	git branch -d $branch
+
+	if [ "$?" -ne "0" ]; then
+		echo "Branch $branch has not been deleted. Please check."
+		exit 6
+	else
+		echo "Branch $branch has been deleted."
+	fi
+fi
+
+if [ "$PUSH" -eq "1" ]; then
+	if [ "$DELETE" -eq "1" ]; then
+		git push origin "$target" :"$branch"
+
+		if [ "$?" -ne "0" ]; then
+			echo "Pushing $target and deleting $branch failed."
+			exit 6
+		else
+			echo "$target updated and $branch removed."
+		fi
+	else
+		git push origin "$target"
+
+		if [ "$?" -ne "0" ]; then
+			echo "Pushing $target failed."
+			exit 6
+		else
+			echo "$target updated."
+		fi
+	fi
+
+fi

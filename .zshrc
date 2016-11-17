@@ -52,7 +52,7 @@ export UPDATE_ZSH_DAYS=13
 plugins=(git composer common-aliases sublime vagrant)
 
 # User configuration
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin:/var/git/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin:~/.bin"
 
 # Some shell script..
 source $ZSH/oh-my-zsh.sh

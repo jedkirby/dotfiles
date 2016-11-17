@@ -1,0 +1,22 @@
+#!/bin/bash
+
+source /var/git/local/git-bash-fns
+
+branch=$(GIT_BRANCH)
+origin=$1
+
+if [[ "$origin" == "" ]]; then
+	origin=$(GIT_REMOTE "$branch")
+fi
+
+if [[ "$origin" == "" ]]; then
+	o=$(git remote)
+	if [[ $(wc -l <<<"$o") -eq 1 ]]; then
+		origin="$o"
+	else
+		echo "Could not determine origin for $branch" >&2
+		exit 1
+	fi
+fi
+
+git push "$origin" +"$branch"

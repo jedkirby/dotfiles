@@ -1,0 +1,84 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Propeller::Repo;
+use File::Slurp;
+use List::MoreUtils qw(any);
+use Opt::Imistic;
+
+my (%ok, %conflicted);
+
+my $clean = 1;
+
+my $deps_filename = shift // 'install/DEPENDENCIES';
+
+chomp( my @lines = read_file $deps_filename );
+open my $tmp_deps, '>', $deps_filename . '.2';
+
+for my $line (@lines) {
+	next if any { $line =~ /$_/ } qw(<<< === >>>);
+
+	my ($dep, $sha) = split /:/, $line;
+
+	if (! $ok{$dep} ) {
+		$ok{$dep} = $sha;
+	}
+	else {
+		$conflicted{$dep} = $sha;
+	}
+}
+
+for my $line (@lines) {
+	# Print none of one half of the conflict; don't print the other marker.
+	next if $line =~ /<<</ .. $line =~ /===/;
+	next if $line =~ />>>/;
+
+	my ($dep, $sha) = split /:/, $line;
+
+	if ( !$conflicted{$dep} ) {
+		$tmp_deps->say($line);
+		next;
+	}
+	if ( !$ok{$dep} ) {
+		# This means we resolved it elsewhere.
+		next;
+	}
+
+	my $repo = Propeller::Repo->from_identifier($dep);
+
+	my ($sha1, $sha2) = ($ok{$dep}, $conflicted{$dep});
+	my ($earliest, $latest) = $repo->commit_order($sha1, $sha2);
+
+	if (! $latest) {
+		$clean = 0;
+		say STDERR "Cannot resolve $dep - conflict has diverged ($sha1 / $sha2)";
+		next;
+	}
+
+	$tmp_deps->say("$dep:$latest");
+
+	delete $ok{$dep};
+}
+
+close $tmp_deps;
+rename $deps_filename . '.2', $deps_filename if $clean;
+
+__END__
+
+=head1 NAME
+
+git-resolve-deps - Try to find the latest commits in a conflicted DEPENDENCIES file
+
+=head1 SYNOPSIS
+
+I<git resolve-deps> [<depsfile>]
+
+=head1 DESCRIPTION
+
+Scans <depsfile> file and collects the commits each dependency is listed against. For those in conflict, attempts to find the latest commit. If successful for all conflicted dependencies, the resolved file is written back.
+
+If any dependency cannot be resolved (usually due to divergence), a copy of <depsfile> suffixed with '.2' is written next to <depsfile> containing any successful resolutions, and unconflicted deps.
+
+<depsfile> defaults to B<install/DEPENDENCIES>

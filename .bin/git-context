@@ -1,0 +1,135 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.014;
+
+use Capture::Tiny qw(capture);
+
+my $input_commit = shift;
+
+my ($actual_commit, undef, $exit) = capture { system qw(git rev-parse --short), $input_commit };
+chomp $actual_commit;
+
+if ($exit) {
+	die "$input_commit not found";
+}
+
+my @branches = do {
+	my ($branches) = capture { system qw(git branch --contains), $actual_commit };
+	my ($tags) = capture { system qw(git tag --contains), $actual_commit };
+
+	+(split /\n/, $branches), (split /\n/, $tags);
+};
+
+@branches = grep !/\(no branch\)/, map s/\**\s+//r, @branches;
+
+my %reported_on;
+
+for my $branch (@branches) {
+	my ($input_log) = capture { system qw(git log -1 --format=%s::%an), $actual_commit };
+	chomp $input_log;
+
+	my ($input_subject, $input_committer) = split /::/, $input_log;
+
+	if (parents($actual_commit) > 1) {
+		if ($reported_on{$actual_commit}) {
+			say "Also in $branch";
+		}
+		else {
+			$reported_on{$actual_commit} = 1;
+
+			print <<REPORT;
+Commit $input_commit by $input_committer
+	$input_subject
+
+Appears to be a merge commit in $branch
+REPORT
+		}
+
+		next;
+	}
+
+	my ($merged_at) = capture { system qw(git log --ancestry-path --merges --pretty=format:%h), "$actual_commit..$branch" };
+	$merged_at = (split /\n/, $merged_at)[-1];
+
+	if (! $merged_at) {
+		print <<REPORT;
+Commit $input_commit by $input_committer
+	$input_subject
+
+Found in $branch but not merged.
+REPORT
+		next;
+	}
+
+	if ($reported_on{$merged_at}) {
+		say "Also in $branch";
+		next;
+	}
+
+	$reported_on{$merged_at} = 1;
+
+	if (not really_merged_at($actual_commit, $merged_at)) {
+		print <<REPORT;
+Commit $input_commit by $input_committer
+	$input_subject
+
+	Found in $branch but was not part of a feature branch.
+REPORT
+		next;
+	}
+
+	my ($branched_from) = capture { system qw(git rev-parse --short), "$merged_at^1" };
+	chomp $branched_from;
+
+	my ($merge_log) = capture { system qw(git log -1 --format=%s::%cn), $merged_at};
+	chomp $merge_log;
+
+	my ($merge_subject, $merge_committer) = split /::/, $merge_log;
+	my ($was_called) = $merge_subject =~ /(.+) merged into $branch/;
+
+	print <<"REPORT";
+Commit $input_commit by $input_committer
+\t\t$input_subject
+
+Discovered in $branch
+	$was_called branched from $branched_from
+	Closed at $merged_at by $merge_committer
+		$merge_subject
+REPORT
+}
+
+# If the first parent of the merge commit also contains $commit it did not actually merge $commit.
+sub really_merged_at {
+	my $commit = shift;
+	my $merge_point = shift;
+
+	my ($history) = capture { system qw(git log --pretty=format:%h), "$merge_point^1" };
+
+	return $history !~ /^$commit$/m;
+}
+
+sub parents {
+	my $commit = shift;
+
+	my ($parents) = capture { system qw(git log -1 --pretty=format:%p), $commit };
+	chomp $parents;
+
+	return split ' ', $parents;
+}
+
+__END__
+
+=head1 NAME
+
+git-context - Spout information relevant to our workflow about a commit
+
+=head1 SYNOPSIS
+
+I<git context> <commit>
+
+=DESCRIPTION
+
+Just a small utility to see whether it's merged, which branch it is in or used
+to be in, what releases it is in, etc.

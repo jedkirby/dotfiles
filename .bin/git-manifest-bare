@@ -1,0 +1,20 @@
+#!/bin/bash
+
+output=''
+
+spinner=( '/' '-' '|' '\' )
+c=0;
+
+for i in `(find objects -type f | sed 's@^.*objects/\(..\)/\(.\+\)$@\1\2@'; git verify-pack -v objects/pack/*.idx | grep commit | cut -f1 -d' ';) | sort -u`; do
+	tmp=`git log -1 --pretty=format:'%Cgreen%h%Creset %ci %Cred%cN%Creset %s' $i;`
+	if [ -n "$tmp" ]; then
+		output="$output\n$tmp"
+	fi
+	echo -n $'\b'${spinner[$(expr $c / 4)]}
+	let "c=c+1"
+	let "c=c%16"
+done
+
+output=$(perl -MList::UtilsBy=nsort_by -e'print reverse nsort_by { ($x = join "", (split)[1,2]) =~ s/\D//g; $x } <>' <(echo -e "$output") 2>/dev/null)
+
+echo "$output" | less -FSRX
