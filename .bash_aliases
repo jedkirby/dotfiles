@@ -1,5 +1,3 @@
-alias ll='ls -lGh'
-alias code='sublime .'
 alias cdc='cd ~/Clients && clear'
 alias hosts='sudo nano /etc/hosts'
 alias phpunit='php vendor/bin/phpunit'

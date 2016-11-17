@@ -49,10 +49,10 @@ export UPDATE_ZSH_DAYS=13
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git composer vagrant)
+plugins=(git composer common-aliases sublime vagrant)
 
 # User configuration
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin:/var/git/bin"
 
 # Some shell script..
 source $ZSH/oh-my-zsh.sh
@@ -91,4 +91,9 @@ fi
 # NVM
 if [ -f $(brew --prefix nvm)/nvm.sh ]; then
   source $(brew --prefix nvm)/nvm.sh
+fi
+
+# Travis
+if [ -f ~/.travis/travis.sh ]; then
+  source ~/.travis/travis.sh
 fi
