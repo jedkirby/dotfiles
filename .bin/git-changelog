@@ -1,3 +1,0 @@
-#!/bin/bash
-
-git log --format="%s" --merges "${1}..${2}" | grep resolves | cut -d' ' -f6,1 | awk '{print $2 " " $1}' | sort

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-git log --merges --grep="merged into" --pretty=oneline $(git merge-base HEAD "$*")..HEAD \
-	| perl -nle'/resolves/ and ($_) = /(\S+) merged into/ and print' \
-	| sort
