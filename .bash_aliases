@@ -8,3 +8,5 @@ alias gci='git ci'
 alias gin='git log $(git describe --tags --abbrev=0)..HEAD --merges --first-parent --oneline'
 alias gcd='git cdiff'
 alias gg='glg'
+
+alias v='vagrant'
