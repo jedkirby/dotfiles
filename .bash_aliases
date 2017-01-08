@@ -1,6 +1,7 @@
 alias cdc='cd ~/Clients && clear'
 alias hosts='sudo nano /etc/hosts'
 alias phpunit='php vendor/bin/phpunit'
+alias coveralls='php vendor/bin/coveralls -v'
 
 alias glg='git lg'
 alias gff='git ff'
