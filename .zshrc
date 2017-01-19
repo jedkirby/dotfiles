@@ -98,3 +98,8 @@ fi
 if [ -f ~/.travis/travis.sh ]; then
   source ~/.travis/travis.sh
 fi
+
+# Custom ZSH
+if [ -f ~/.zshrcp ]; then
+  source ~/.zshrcp
+fi
