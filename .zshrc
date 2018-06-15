@@ -89,11 +89,6 @@ if [ -f ~/.bash_secret_aliases ]; then
   source ~/.bash_secret_aliases
 fi
 
-# NVM
-if [ -f $(brew --prefix nvm)/nvm.sh ]; then
-  source $(brew --prefix nvm)/nvm.sh
-fi
-
 # Travis
 if [ -f ~/.travis/travis.sh ]; then
   source ~/.travis/travis.sh
