@@ -89,12 +89,12 @@ if [ -f ~/.bash_secret_aliases ]; then
   source ~/.bash_secret_aliases
 fi
 
-# Travis
-if [ -f ~/.travis/travis.sh ]; then
-  source ~/.travis/travis.sh
-fi
-
 # Custom ZSH
 if [ -f ~/.zshrcp ]; then
   source ~/.zshrcp
+fi
+
+# Bootups
+if [ -f ~/.bootup ]; then
+  source ~/.bootup
 fi
