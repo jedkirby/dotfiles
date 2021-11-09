@@ -98,3 +98,7 @@ fi
 if [ -f ~/.bootup ]; then
   source ~/.bootup
 fi
+
+# GPG Keys
+export GPG_TTY=$(tty)
+
