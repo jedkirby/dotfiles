@@ -27,6 +27,7 @@
 	paths = remote -v
 	br = branch
 	authors = !git log --format='%aN' | sort | uniq -c | sort -nr
+	com = checkout origin/main
 
 [push]
 	default = simple
