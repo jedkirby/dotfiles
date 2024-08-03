@@ -54,6 +54,7 @@ plugins=(git common-aliases)
 # User configuration
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export PATH=$PATH:~/.bin
+export PATH=$PATH:~/flutter/bin
 
 # Some shell script..
 source $ZSH/oh-my-zsh.sh
