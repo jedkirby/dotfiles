@@ -31,3 +31,5 @@
 
 [push]
 	default = simple
+[gpg]
+	program = /usr/local/bin/gpg
